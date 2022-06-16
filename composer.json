@@ -1,0 +1,11 @@
+{
+  "require": {
+    "ext-json": "*",
+    "ext-zlib": "*",
+    "ext-gmp": "*",
+    "ext-uv": "*",
+    "ext-mbstring": "*",
+    "ext-sodium": "*",
+    "team-reflex/discord-php": "*"
+  }
+}
