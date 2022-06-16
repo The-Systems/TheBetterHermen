@@ -3,9 +3,16 @@
     "ext-json": "*",
     "ext-zlib": "*",
     "ext-gmp": "*",
-    "ext-uv": "*",
     "ext-mbstring": "*",
     "ext-sodium": "*",
-    "team-reflex/discord-php": "*"
+    "team-reflex/discord-php": "*",
+    "discord-php/slash": "*",
+    "bittyphp/event-manager": "^2.0",
+    "ext-pdo": "*"
+  },
+  "autoload": {
+    "psr-4": {
+      "hermen\\": "src/hermen/"
+    }
   }
 }
