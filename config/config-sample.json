@@ -1,4 +1,9 @@
 {
   "token": "",
-  "prefix": "!"
+  "prefix": "!",
+
+  "hosmatic": {
+    "url": "https://api.hosmatic.com",
+    "token": ""
+  }
 }

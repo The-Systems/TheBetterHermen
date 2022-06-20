@@ -8,7 +8,8 @@
     "team-reflex/discord-php": "*",
     "discord-php/slash": "*",
     "bittyphp/event-manager": "^2.0",
-    "ext-pdo": "*"
+    "ext-pdo": "*",
+    "ext-curl": "*"
   },
   "autoload": {
     "psr-4": {

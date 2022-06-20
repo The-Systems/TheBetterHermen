@@ -3,6 +3,7 @@
 namespace hermen\commands;
 
 use hermen\Hermen;
+use hermen\commands\hosmatic\Profil;
 
 class LoadCommands
 {
@@ -10,5 +11,7 @@ class LoadCommands
     new Ping($hermen);
     new Info($hermen);
     new Poll($hermen);
+
+    new Profil($hermen);
   }
 }
