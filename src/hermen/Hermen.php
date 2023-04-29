@@ -31,7 +31,7 @@ class Hermen
     $this->path = realpath(__DIR__ . "/../../");
     $this->eventManager = new EventManager();
 
-    $this->database = $this->initialDatabase();
+    #$this->database = $this->initialDatabase();
   }
 
   public function getConfig(): array
