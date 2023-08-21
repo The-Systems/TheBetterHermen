@@ -7,20 +7,15 @@ use Exception;
 use PDOException;
 use Discord\Discord;
 use hermen\events\Events;
-use Discord\Slash\RegisterClient;
 use hermen\commands\LoadCommands;
-use Bitty\EventManager\EventManager;
 
 class Hermen
 {
 
   public readonly string $path;
   public readonly Discord $discordClient;
-  public readonly RegisterClient $slashCommandsClient;
-
   public array $commands = [];
 
-  public EventManager $eventManager;
   private readonly PDO $database;
 
   /**
@@ -29,8 +24,6 @@ class Hermen
   public function __construct ()
   {
     $this->path = realpath(__DIR__ . "/../../");
-    $this->eventManager = new EventManager();
-
     #$this->database = $this->initialDatabase();
   }
 
@@ -65,16 +58,16 @@ class Hermen
     }
   }
 
-  public function setClients(Discord $discord, RegisterClient $slash): void
+  public function setClients(Discord $discord): void
   {
     $this->discordClient = $discord;
-    $this->slashCommandsClient = $slash;
 
     new LoadCommands($this);
 
     $hermen = $this;
     $this->discordClient->on('ready', function (Discord $discord) use ($hermen) {
       new Events($hermen);
+      new SlashCommands($hermen);
     });
 
     $this->discordClient->run();
@@ -85,14 +78,5 @@ class Hermen
     return $this->discordClient;
   }
 
-  public function getEventManager(): EventManager
-  {
-    return $this->eventManager;
-  }
-
-  public function getSlashCommandsClient(): RegisterClient
-  {
-    return $this->slashCommandsClient;
-  }
 
 }

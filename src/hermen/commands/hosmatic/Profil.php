@@ -37,18 +37,25 @@ class Profil extends Commands
                     'Authorization: Bearer ' . $this->hermen->getConfig()['hosmatic']['token'],
                     'ID: ' . $message->user_id
                 ),
+              CURLOPT_SSL_VERIFYHOST => 0,
+              CURLOPT_SSL_VERIFYPEER => 0,
             ));
 
-            $response = curl_exec($curl);
+            $responseRaw = curl_exec($curl);
+            $statusCode = curl_getinfo($curl, CURLINFO_HTTP_CODE);
+            $error = curl_error($curl);
             curl_close($curl);
-            $response = json_decode($response, true);
-            if ($response['success']) {
-                $response = $response['response'];
+            $response = json_decode($responseRaw, true);
 
-
-                $message->channel->sendMessage(MessageBuilder::new()->setEmbeds([['title' => 'Profil', 'description' => $response['username'], 'color' => 65280,],]));
+            if($response == null){
+              $message->channel->sendMessage("Error: invalid response, Code: ".$statusCode.", Error: ".$error);
             } else {
-                $message->channel->sendMessage("Error!");
+              if ($response['success']) {
+                $response = $response['response'];
+                $message->channel->sendMessage(MessageBuilder::new()->setEmbeds([['title' => 'Profil', 'description' => $response['username'], 'color' => 65280,],]));
+              } else {
+                $message->channel->sendMessage("Error: " . $responseRaw);
+              }
             }
         } catch (NoPermissionsException $e) {
             echo "No permissions to send messages in this channel. " . $e->getMessage();

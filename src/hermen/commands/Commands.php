@@ -13,7 +13,7 @@ abstract class Commands
     $this->hermen = $hermen;
   }
 
-  protected function createCommand(string $command, $class): void
+  protected function createCommand(string $command, $class, bool $slash = false): void
   {
     $this->hermen->commands[$command] = $class;
   }

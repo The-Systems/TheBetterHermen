@@ -1,5 +1,5 @@
 composer.phar
 /vendor/
 /.idea/
-/config/config.php
+/config/config.json
 /config/mysql.json
