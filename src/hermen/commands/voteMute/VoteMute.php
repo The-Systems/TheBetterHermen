@@ -13,8 +13,10 @@ class VoteMute
 {
 
   private int $voteCountUp = 0;
+  private array $voteUp = [];
 
   private int $voteCountDown = 0;
+  private array $voteDown = [];
   private array $votes = [];
 
   private bool $end = false;
@@ -44,10 +46,15 @@ class VoteMute
     if($this->end){
       return;
     }
-    if(in_array($user->id, $this->votes)){
+    if(in_array($user->id, $this->voteDown)){
+      $this->voteCountDown--;
+      $this->voteDown = array_diff($this->voteDown, [$user->id]);
+    } elseif(in_array($user->id, $this->voteUp)){
       return;
     }
+
     $this->votes[] = $user->id;
+    $this->voteUp[] = $user->id;
 
     $this->voteCountUp++;
   }
@@ -57,10 +64,15 @@ class VoteMute
     if($this->end){
       return;
     }
-    if(in_array($user->id, $this->votes)){
+    if(in_array($user->id, $this->voteUp)){
+      $this->voteCountUp--;
+      $this->voteUp = array_diff($this->voteUp, [$user->id]);
+    } elseif(in_array($user->id, $this->voteDown)){
       return;
     }
+
     $this->votes[] = $user->id;
+    $this->voteDown[] = $user->id;
 
     $this->voteCountDown++;
   }

@@ -42,8 +42,9 @@ class VoteMuteCommand implements CommandsInterface
     $hermen->getDiscordClient()->application->commands->save($command);
 
     $this->hermen->discordClient->listenCommand('votemute', function (Interaction $interaction) {
-      if($this->lastVoteMute+600 > time()){
-        $interaction->respondWithMessage(MessageBuilder::new()->setContent("Du kannst nur alle 10 Minuten einen Votemute erstellen"), true);
+      $cooldown = $this->lastVoteMute+600;
+      if($cooldown > time()){
+        $interaction->respondWithMessage(MessageBuilder::new()->setContent("Es kann nur alle 10 Minuten ein Votemute erstellt werden. <t:".$cooldown.":R>"), true);
         return;
       } else {
         $this->lastVoteMute = time();
@@ -81,17 +82,17 @@ class VoteMuteCommand implements CommandsInterface
     try {
       $hermen = $this->hermen;
       $message = $channel->sendMessage($build);
-      $message->then(function(Message $message) use ($voteMute, $hermen){
+      $message->then(function(Message $message) use ($voteMute, $hermen, $interaction){
         $voteMute->setMessage($message);
         $loop = $hermen->getDiscordClient()->getLoop();
 
-        function updateMessage(VoteMute $voteMute): void
+        function updateMessage(VoteMute $voteMute, User $creator): void
         {
           $voteMute->getMessage()->edit(MessageBuilder::new()->setEmbeds(
             [
               [
                 'title' => 'Votemute',
-                'description' => 'Vote für einen Mute für '.$voteMute->getUser(),
+                'description' => 'Vote für einen Mute für '.$voteMute->getUser().' erstellt von '.$creator,
                 'color' => 65280,
                 'fields' => [
                   ['name' => 'Mute', 'value' => $voteMute->getVoteCountUp(), 'inline' => true],
@@ -103,14 +104,14 @@ class VoteMuteCommand implements CommandsInterface
           ));
         }
 
-        $loop->addPeriodicTimer(1, function ($timer) use ($voteMute, $loop){
+        $loop->addPeriodicTimer(1, function ($timer) use ($voteMute, $loop, $interaction){
           if($voteMute->getLastMessageUpdate() <= time()-5){
             $voteMute->setLastMessageUpdate(time());
-            updateMessage($voteMute);
+            updateMessage($voteMute, $interaction->user);
           }
 
           if($voteMute->checkEnd()) {
-            updateMessage($voteMute);
+            updateMessage($voteMute, $interaction->user);
             $loop->cancelTimer($timer);
           }
         });
