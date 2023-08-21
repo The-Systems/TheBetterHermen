@@ -23,10 +23,15 @@ class VoteMute
   private Hermen $hermen;
   private User $user;
 
-  public function __construct(Hermen $hermen, User $user)
+  private int $endTimestamp = 0;
+
+  private int $lastMessageUpdate = 0;
+
+  public function __construct(Hermen $hermen, User $user, int $endTimestamp)
   {
     $this->hermen = $hermen;
     $this->user = $user;
+    $this->endTimestamp = $endTimestamp;
   }
 
   public function setMessage(Message $message): void
@@ -45,10 +50,6 @@ class VoteMute
     $this->votes[] = $user->id;
 
     $this->voteCountUp++;
-
-    if($this->voteCountUp >= 5){
-      $this->end(true);
-    }
   }
 
   public function addNoMute(User $user): void
@@ -61,12 +62,7 @@ class VoteMute
     }
     $this->votes[] = $user->id;
 
-
     $this->voteCountDown++;
-
-    if($this->voteCountDown >= 5){
-      $this->end(false);
-    }
   }
 
   public function getVoteCountUp(): int
@@ -97,10 +93,21 @@ class VoteMute
         $guild = $this->getMessage()->guild;
 
         $guild->members->fetch($this->getUser()->id)->done(function (Member $member) {
-          $time = new Carbon(new \DateTime('+10 minutes', new \DateTimeZone('Europe/Berlin')));
+          $muteMin = 0;
+          if($this->voteCountUp >= 15) {
+            $muteMin = 20;
+          }elseif($this->voteCountUp >= 10) {
+            $muteMin = 15;
+          } elseif($this->voteCountUp >= 5){
+            $muteMin = 10;
+          } else {
+            $muteMin = 5;
+          }
+
+          $time = new Carbon(new \DateTime('+'.$muteMin.' minutes', new \DateTimeZone('Europe/Berlin')));
           $timeout = $member->timeoutMember($time, 'Votemute');
-          $timeout->then(function () use ($time){
-            $this->getMessage()->reply("Es wurde für einen Mute gestimmt! ".$this->getUser()." ist für 10 Minuten gemuted (".$time->format("d.m.Y H:i").")! ");
+          $timeout->then(function () use ($time, $muteMin){
+            $this->getMessage()->reply("Es wurde für einen Mute gestimmt! ".$this->getUser()." ist für ".$muteMin." Minuten gemuted (".$time->format("d.m.Y H:i").")! ");
           });
           $timeout->otherwise(function () {
             $this->getMessage()->reply("Es wurde für einen Mute gestimmt! ".$this->getUser()." konnte nicht gemuted werden! ");
@@ -113,5 +120,45 @@ class VoteMute
       $this->getMessage()->reply("Es wurde gegen einen Mute gestimmt!");
     }
   }
+
+  public function checkEnd(): bool
+  {
+    if($this->endTimestamp < time()){
+      if($this->voteCountDown >= $this->voteCountUp){
+        $this->end(false);
+      } else {
+        if($this->voteCountUp < 3){
+          $this->end(false);
+          return true;
+        }
+
+        $this->end(true);
+      }
+      return true;
+    }
+    return false;
+  }
+
+  public function isEnd(): bool
+  {
+    return $this->end;
+  }
+
+  public function getEndTimestamp(): int
+  {
+    return $this->endTimestamp;
+  }
+
+  public function getLastMessageUpdate(): int
+  {
+    return $this->lastMessageUpdate;
+  }
+
+  public function setLastMessageUpdate(int $lastMessageUpdate): void
+  {
+    $this->lastMessageUpdate = $lastMessageUpdate;
+  }
+
+
 
 }

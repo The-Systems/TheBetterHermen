@@ -15,6 +15,7 @@ class LoadCommands
     new PollCommand($hermen);
     new VoteMuteCommand($hermen);
     new HelpCommand($hermen);
+    new SayCommand($hermen);
 
     new Profil($hermen);
   }
