@@ -2,6 +2,7 @@
 
 namespace hermen;
 
+use Discord\Parts\User\Activity;
 use PDO;
 use Exception;
 use PDOException;
@@ -68,7 +69,9 @@ class Hermen
     $this->discordClient->on('ready', function (Discord $discord) use ($hermen) {
       new Events($hermen);
       new SlashCommands($hermen);
+      $this->discordClient->updatePresence(new Activity($discord, ['name' => 'PHP', 'type' => Activity::TYPE_COMPETING]), false, "online");
     });
+
 
     $this->discordClient->run();
   }
