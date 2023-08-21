@@ -3,6 +3,8 @@
 namespace hermen;
 
 use Discord\Parts\User\Activity;
+use hermen\commands\Command;
+use hermen\commands\CommandsInterface;
 use PDO;
 use Exception;
 use PDOException;
@@ -63,12 +65,11 @@ class Hermen
   {
     $this->discordClient = $discord;
 
-    new LoadCommands($this);
 
     $hermen = $this;
     $this->discordClient->on('ready', function (Discord $discord) use ($hermen) {
       new Events($hermen);
-      new SlashCommands($hermen);
+      new LoadCommands($hermen);
       $this->discordClient->updatePresence(new Activity($discord, ['name' => 'PHP', 'type' => Activity::TYPE_COMPETING]), false, "online");
     });
 
@@ -80,6 +81,14 @@ class Hermen
   {
     return $this->discordClient;
   }
+
+
+  public function createCommand(string $command, CommandsInterface $class, bool $slash = false): void
+  {
+    $this->commands[$command] = new Command($class, $slash);
+
+  }
+
 
 
 }

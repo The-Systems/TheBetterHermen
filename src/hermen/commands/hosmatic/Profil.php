@@ -2,27 +2,38 @@
 
 namespace hermen\commands\hosmatic;
 
+use Discord\Builders\CommandBuilder;
+use Discord\Parts\Interactions\Interaction;
+use hermen\commands\CommandsInterface;
 use hermen\Hermen;
 use hermen\commands\Commands;
 use Discord\Parts\Channel\Message;
 use Discord\Builders\MessageBuilder;
-use Bitty\EventManager\EventInterface;
 use Discord\Http\Exceptions\NoPermissionsException;
 
-class Profil extends Commands
+class Profil implements CommandsInterface
 {
     public Hermen $hermen;
     private string $command = "profil";
 
     public function __construct(Hermen $hermen)
     {
-        $this->hermen = $hermen;
+      $this->hermen = $hermen;
+      $hermen->createCommand($this->command, $this, true);
 
-        parent::__construct($hermen);
-        parent::createCommand($this->command, $this);
+      $command = $hermen->getDiscordClient()->application->commands->create(CommandBuilder::new()
+        ->setName($this->command)
+        ->setDescription($this->getDescription())
+        ->toArray()
+      );
+      $hermen->getDiscordClient()->application->commands->save($command);
+
+      $this->hermen->discordClient->listenCommand($this->command, function (Interaction $interaction) {
+        $this->getProfil($interaction);
+      });
     }
 
-    public function runCommand(Message $message)
+    public function getProfil(Interaction $interaction): void
     {
         try {
 
@@ -35,7 +46,7 @@ class Profil extends Commands
                 CURLOPT_CUSTOMREQUEST => 'GET',
                 CURLOPT_HTTPHEADER => array(
                     'Authorization: Bearer ' . $this->hermen->getConfig()['hosmatic']['token'],
-                    'ID: ' . $message->user_id
+                    'ID: ' . $interaction->user->id
                 ),
               CURLOPT_SSL_VERIFYHOST => 0,
               CURLOPT_SSL_VERIFYPEER => 0,
@@ -48,13 +59,13 @@ class Profil extends Commands
             $response = json_decode($responseRaw, true);
 
             if($response == null){
-              $message->channel->sendMessage("Error: invalid response, Code: ".$statusCode.", Error: ".$error);
+              $interaction->respondWithMessage(MessageBuilder::new()->setContent("Error: " . $error));
             } else {
               if ($response['success']) {
                 $response = $response['response'];
-                $message->channel->sendMessage(MessageBuilder::new()->setEmbeds([['title' => 'Profil', 'description' => $response['username'], 'color' => 65280,],]));
+                $interaction->respondWithMessage(MessageBuilder::new()->setEmbeds([['title' => 'Profil', 'description' => $response['username'], 'color' => 65280,],]));
               } else {
-                $message->channel->sendMessage("Error: " . $responseRaw);
+                $interaction->respondWithMessage(MessageBuilder::new()->setContent("Error: " . $response['response']['error_message']));
               }
             }
         } catch (NoPermissionsException $e) {
@@ -62,4 +73,13 @@ class Profil extends Commands
         }
     }
 
+  public function getDescription(): string
+  {
+    return "Hosmatic Profil abrufen";
+  }
+
+  public function getCommand(): string
+  {
+    return $this->command;
+  }
 }

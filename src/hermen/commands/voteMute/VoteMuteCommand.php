@@ -2,18 +2,20 @@
 
 namespace hermen\commands\voteMute;
 
+use Discord\Builders\CommandBuilder;
 use Discord\Builders\Components\ActionRow;
 use Discord\Builders\Components\Button;
 use Discord\Builders\MessageBuilder;
 use Discord\Http\Exceptions\NoPermissionsException;
 use Discord\Parts\Channel\Channel;
+use Discord\Parts\Interactions\Command\Option;
 use Discord\Parts\Interactions\Interaction;
 use Discord\Parts\Channel\Message;
 use Discord\Parts\User\User;
-use hermen\commands\Commands;
+use hermen\commands\CommandsInterface;
 use hermen\Hermen;
 
-class VoteMuteCommand extends Commands
+class VoteMuteCommand implements CommandsInterface
 {
   public Hermen $hermen;
   private string $command = "votemute";
@@ -22,8 +24,20 @@ class VoteMuteCommand extends Commands
   {
     $this->hermen = $hermen;
 
-    parent::__construct($hermen);
-    parent::createCommand($this->command, $this, true);
+    $hermen->createCommand($this->command, $this, true);
+
+    $command = $hermen->getDiscordClient()->application->commands->create(CommandBuilder::new()
+      ->setName('votemute')
+      ->setDescription('Votemute a user')
+      ->addOption((new Option($hermen->getDiscordClient()))
+        ->setName('user')
+        ->setDescription('User to votemute')
+        ->setType(Option::USER)
+        ->setRequired(true)
+      )
+      ->toArray()
+    );
+    $hermen->getDiscordClient()->application->commands->save($command);
 
     $this->hermen->discordClient->listenCommand('votemute', function (Interaction $interaction) {
       $user = $interaction->data->resolved->users->first();
@@ -86,6 +100,16 @@ class VoteMuteCommand extends Commands
         ]
       ]
     ));
+  }
+
+  public function getDescription(): string
+  {
+    return "Votemute eine Person";
+  }
+
+  public function getCommand(): string
+  {
+    return $this->command;
   }
 
 }

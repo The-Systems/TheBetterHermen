@@ -19,7 +19,15 @@ class TriggerCommand
     $command = substr($command, 1);
 
     if(isset($this->hermen->commands[$command])){
-      $this->hermen->commands[$command]->runCommand($message);
+      $commandO = $this->hermen->commands[$command];
+      if(!$commandO instanceof Command){
+        return;
+      }
+      if($commandO->isSlash()){
+        return;
+      }
+
+      $commandO->runCommand($message);
     }
   }
 

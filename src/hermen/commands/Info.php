@@ -4,10 +4,9 @@ namespace hermen\commands;
 use hermen\Hermen;
 use Discord\Parts\Channel\Message;
 use Discord\Builders\MessageBuilder;
-use Bitty\EventManager\EventInterface;
 use Discord\Http\Exceptions\NoPermissionsException;
 
-class Info extends Commands
+class Info implements CommandsInterface
 {
   public Hermen $hermen;
   private string $command = "info";
@@ -16,8 +15,7 @@ class Info extends Commands
   {
     $this->hermen = $hermen;
 
-    parent::__construct($hermen);
-    parent::createCommand($this->command, $this);
+    $hermen->createCommand($this->command, $this);
   }
 
   public function runCommand(Message $message){
@@ -28,4 +26,13 @@ class Info extends Commands
     }
   }
 
+  public function getDescription(): string
+  {
+    return "Info";
+  }
+
+  public function getCommand(): string
+  {
+    return $this->command;
+  }
 }
